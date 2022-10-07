@@ -42,9 +42,9 @@ addingButton.addEventListener("click", () =>{
     let quantity = parseInt(dataQuantity);
     //creation tableau produit
     let product = {
-        "id":idProduct,
-        "itemColor":color,
-        "itemQuantity":quantity
+        id: idProduct,
+        itemColor: color,
+        quantity :quantity
     };
     addCart(product);
 })
@@ -54,10 +54,10 @@ function addCart(product){
     //ajout produit si deja present a l'aide de comparaison de parametre via couleur et id
     let testProduct = cart.find(p=> p.idProduct==product.idProduct && p.itemColor==product.itemColor);
     if (testProduct != undefined){
-        testProduct.itemQuantity += product.itemQuantity;
+        testProduct.quantity += product.quantity;
     }
     else{
-        product.itemQuantity;
+        product.quantity;
         cart.push(product);
     }
     saveCart(cart);

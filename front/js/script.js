@@ -2,7 +2,6 @@ let host = "http://localhost:3000/api/products/";
 fetch(host)
     .then(reponse => reponse.json())
     .then(data =>{
-        console.table(data);
         for (var i = 0; i < data.length ; i++){
             const sectionItems = document.querySelector("#items");
             

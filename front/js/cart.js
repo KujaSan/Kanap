@@ -16,22 +16,31 @@ let cart = loadCart();
     //total quantité
 const totalQuantity = document.getElementById("totalQuantity");
 function resultQuantity(){
-    let sumQuantity = cart.map(item => item.itemQuantity).reduce((previous, current) => previous + current, 0);
+    let sumQuantity = cart.map(item => item.quantity).reduce((previous, current) => previous + current, 0);
     totalQuantity.innerText = sumQuantity;
 }
     //total prix
 
-let lotPrice = 0;
-function reloadPrice(){
-    lotPrice = 0;
-}
+let lotPrice = [];
 const totalPrice = document.getElementById("totalPrice");
-function resultPrice(data, cartItem){
-    price = data.price;
-    quantity = cartItem.itemQuantity;
-    let sumPrice = price * quantity;
-    lotPrice += sumPrice;
-    totalPrice.innerText = lotPrice;
+function resultPrice(){
+    let sumPrice = lotPrice.map(item => item.itemTotal).reduce((previous, current) => previous + current, 0);
+    totalPrice.innerText = sumPrice;
+}
+
+function injectPrice(index,cartItem, itemTotal){
+    lotPrice.splice([index], 1,{
+    itemTotal: itemTotal,
+    id : cartItem.id,
+    color: cartItem.itemColor
+    });
+    resultPrice();
+}
+
+function deletePrice(index, cartItem){
+    lotPrice.splice([index],1);
+    resultPrice();
+    return cartItem.quantity;
 }
 
 console.log("debut");
@@ -39,7 +48,7 @@ console.log("debut");
 
 const GetCartItem = async function(){
     // lancement des itérations
-    cart.forEach((cartItem, index) =>{
+    await cart.forEach((cartItem, index) =>{
         fetch(host+cartItem.id)
         .then (reponse => reponse.json())
         .then (data =>{
@@ -77,6 +86,13 @@ const GetCartItem = async function(){
                             const itemPrice = document.createElement("p");
                             itemPrice.innerText = data.price + "€";
                             cart__item__content__description.appendChild(itemPrice);
+                            lotPrice.push({
+                                itemTotal: data.price * cart[index].quantity,
+                                id : cartItem.id,
+                                color: cartItem.itemColor
+                            });
+                            console.log(lotPrice.itemTotal);
+                            console.table(lotPrice);
     //div cart__item__content__settings
                         const cart__item__content__settings = document.createElement("div");
                         cart__item__content__settings.classList.add("cart__item__content__settings");
@@ -86,28 +102,33 @@ const GetCartItem = async function(){
                             cart__item__content__settings__quantity.classList.add("cart__item__content__quantity");
                             cart__item__content__settings.appendChild(cart__item__content__settings__quantity);
     //contenu div cart__item__content__settings__quantity
-                                const quantity = document.createElement("p");
-                                quantity.innerText = "Qté :";
-                                cart__item__content__settings__quantity.appendChild(quantity);
+                                const quantityText = document.createElement("p");
+                                quantityText.innerText = "Qté :";
+                                cart__item__content__settings__quantity.appendChild(quantityText);
                                 const itemQuantity = document.createElement("input");
                                 itemQuantity.setAttribute("type","number");
                                 itemQuantity.setAttribute("name","itemQuantity");
                                 itemQuantity.setAttribute("min","1")
                                 itemQuantity.setAttribute("max", "100")
-                                itemQuantity.setAttribute("value", cartItem.itemQuantity);
+                                itemQuantity.setAttribute("value", cart[index].quantity);
                                 itemQuantity.addEventListener('change',() =>{
                                     let cart = loadCart();
                                     let newQuantity = parseInt(itemQuantity.value);
-                                    cart[index].itemQuantity = newQuantity;
-                                    cartItem.itemQuantity = newQuantity;
-                                    
+                                    article = itemQuantity.closest("article");
+                                    const index = cart.findIndex(element => {
+                                        if (element.id === article.dataset.id && element.itemColor === article.dataset.color){
+                                            return true
+                                        }
+                                        return false;
+                                    });
+                                    cart[index].quantity = newQuantity;
+                                    cartItem.quantity = newQuantity;
                                     saveCart(cart);
                                     //maj quantité totale
                                     resultQuantity();
                                     //maj prix total
-                                    reloadPrice();
-                                    resultPrice(data, cartItem);
-
+                                    let itemTotal = data.price * cart[index].quantity;
+                                    injectPrice(index,cartItem, itemTotal);
                                 })
                                 cart__item__content__settings__quantity.appendChild(itemQuantity);
     //div cart__item__content__settings__delete
@@ -120,21 +141,23 @@ const GetCartItem = async function(){
                                 deleteItem.innerText = "Supprimer";
                                 deleteItem.addEventListener("click", ()=>{
                                         loadCart();
+                                        console.table(cart);
                                         const newCart = cart.filter(item => item != cartItem);
                                         cart = newCart;
-                                        console.table(newCart);
-                                        console.table(index);
-                                        cart__items.removeChild(cart__item);
                                         saveCart(cart);
                                         //maj quantité totale
                                         resultQuantity();
+                                        //maj prix total
+                                        deletePrice(index, cartItem);
                                         
+                                        cart__items.removeChild(cart__item);
+                                        console.table(cart);
                                 })
                                 cart__item__content__settings__delete.appendChild(deleteItem);
                                 //affichage natal quantitées
                                 resultQuantity();
                                 //affichage natal Prix total
-                                resultPrice(data, cartItem);
+                                resultPrice();
                                 console.log(index);
         })
     })
@@ -250,7 +273,6 @@ order.addEventListener("click", ()=>{
             contact,
             products
         };
-        console.table(contact,products,postOrder);
         submit(postOrder);
     }
     if(validFirstName == false){
