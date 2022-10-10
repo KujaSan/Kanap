@@ -55,8 +55,9 @@ function addCart(product){
     let testProduct = cart.find(p=> p.idProduct==product.idProduct && p.itemColor==product.itemColor);
     if (testProduct != undefined){
         testProduct.quantity += product.quantity;
-    }
-    else{
+    }else if (product.quantity === 0 || product.itemColor === ""){
+        return false;
+    }else{
         product.quantity;
         cart.push(product);
     }

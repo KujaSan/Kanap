@@ -43,9 +43,6 @@ function deletePrice(index, cartItem){
     return cartItem.quantity;
 }
 
-console.log("debut");
-
-
 const GetCartItem = async function(){
     // lancement des itérations
     await cart.forEach((cartItem, index) =>{
@@ -91,8 +88,6 @@ const GetCartItem = async function(){
                                 id : cartItem.id,
                                 color: cartItem.itemColor
                             });
-                            console.log(lotPrice.itemTotal);
-                            console.table(lotPrice);
     //div cart__item__content__settings
                         const cart__item__content__settings = document.createElement("div");
                         cart__item__content__settings.classList.add("cart__item__content__settings");
@@ -141,7 +136,6 @@ const GetCartItem = async function(){
                                 deleteItem.innerText = "Supprimer";
                                 deleteItem.addEventListener("click", ()=>{
                                         loadCart();
-                                        console.table(cart);
                                         const newCart = cart.filter(item => item != cartItem);
                                         cart = newCart;
                                         saveCart(cart);
@@ -151,20 +145,17 @@ const GetCartItem = async function(){
                                         deletePrice(index, cartItem);
                                         
                                         cart__items.removeChild(cart__item);
-                                        console.table(cart);
                                 })
                                 cart__item__content__settings__delete.appendChild(deleteItem);
                                 //affichage natal quantitées
                                 resultQuantity();
                                 //affichage natal Prix total
                                 resultPrice();
-                                console.log(index);
         })
     })
 }
 GetCartItem();
 
-console.log("fin");
 //Moissonnage des données
 const form = document.querySelector(".cart__order__form");
 const firstName = document.getElementById("firstName");
